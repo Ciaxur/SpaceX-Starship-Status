@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
+	"regexp"
+	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -70,18 +71,73 @@ func main() {
 
 	// Request Tweets
 	tweets := getTweets(bearerToken, userID)
+	latestMatch := cache.LatestMatch
 
 	// Check if there is a New Tweet
 	if tweets.Meta.NewestID != cache.Meta.NewestID {
-		log.Println("New Tweet: ", tweets.Meta.NewestID)
-		log.Println("Tweet ID: ", tweets.Data[0].ID)
-		log.Println("Tweet: ", tweets.Data[0].Text)
+		// DEBUG: Logs
+		fmt.Println("New Tweet: ", tweets.Meta.NewestID)
+		fmt.Println("Tweet ID: ", tweets.Data[0].ID)
 
-		// Save Cache
+		// Find Matching Tweet
+		re, err := regexp.Compile("(?i)status|spacex|starship")
+		handleErr(err, "Regular Expression Failed to Compile")
+		score := 0.0
+
+		for tweetIndex := range tweets.Data {
+			tweet := tweets.Data[tweetIndex]
+
+			if found := re.FindAll([]byte(tweet.Text), -1); len(found) > 0 {
+				tweet := tweets.Data[tweetIndex]
+
+				// Check if already checked
+				if cache.LatestMatch.ID == tweet.ID {
+					score = 0.0
+					break
+				}
+
+				// Keep track of Latest Match
+				latestMatch = tweet
+				fmt.Printf("%s: %s\n", tweet.ID, tweet.Text)
+				fmt.Printf("Found: %s\n\n", found)
+
+				// Score Finding!
+				for index := range found {
+					value := string(found[index])
+					switch strings.ToLower(value) {
+					case "status":
+						score += 0.8
+						break
+					case "spacex":
+						score += 0.1
+						break
+					case "starship":
+						score += 0.1
+						break
+					}
+				}
+
+				// Stop Loop, since Found what was looking for!
+				break
+			}
+		}
+
+		// Check Scoring
+		fmt.Printf("Score of '%.2f'\n", score)
+		if score > 0.8 && latestMatch.ID != cache.LatestMatch.ID {
+			fmt.Println("Latest Matched ID: ", latestMatch.ID)
+		} else {
+			latestMatch = cache.LatestMatch // Keep older Match
+		}
+
+		// Store current New State
 		cache = tweets
+		cache.LatestMatch = latestMatch
 		data, err := json.Marshal(cache)
 		handleErr(err, "Error Converting Cache to Bytes")
 		ioutil.WriteFile("cached.json", data, 0664)
+	} else {
+		fmt.Println("No New Tweats")
 	}
 
 }

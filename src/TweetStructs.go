@@ -16,6 +16,7 @@ type TweetMeta struct {
 
 // Tweet Reply Interface
 type Tweet struct {
-	Data []TweetData `json:"data"`
-	Meta TweetMeta   `json:"meta"`
+	Data        []TweetData `json:"data"`         // Tweet Data
+	Meta        TweetMeta   `json:"meta"`         // Metadata
+	LatestMatch TweetData   `json:"latest_match"` // Object of the Latest Match
 }
