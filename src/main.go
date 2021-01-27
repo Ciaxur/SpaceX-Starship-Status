@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"os/exec"
 	"regexp"
 	"strings"
 
@@ -75,10 +77,6 @@ func main() {
 
 	// Check if there is a New Tweet
 	if tweets.Meta.NewestID != cache.Meta.NewestID {
-		// DEBUG: Logs
-		fmt.Println("New Tweet: ", tweets.Meta.NewestID)
-		fmt.Println("Tweet ID: ", tweets.Data[0].ID)
-
 		// Find Matching Tweet
 		re, err := regexp.Compile("(?i)status|spacex|starship")
 		handleErr(err, "Regular Expression Failed to Compile")
@@ -98,8 +96,6 @@ func main() {
 
 				// Keep track of Latest Match
 				latestMatch = tweet
-				fmt.Printf("%s: %s\n", tweet.ID, tweet.Text)
-				fmt.Printf("Found: %s\n\n", found)
 
 				// Score Finding!
 				for index := range found {
@@ -125,7 +121,22 @@ func main() {
 		// Check Scoring
 		fmt.Printf("Score of '%.2f'\n", score)
 		if score > 0.8 && latestMatch.ID != cache.LatestMatch.ID {
-			fmt.Println("Latest Matched ID: ", latestMatch.ID)
+			fmt.Println("New Tweet:")
+			fmt.Println("- ID: ", latestMatch.ID)
+			fmt.Println("- Tweet: ", latestMatch.Text)
+
+			// Execute given method with Tweet ID and Text at end
+			// Args[1] 	= Command to Execute
+			// Args[2:] = Arguments to Command (Optional)
+			if len(os.Args) > 1 {
+				arr := append(os.Args[2:], latestMatch.ID, latestMatch.Text)
+
+				cmd := exec.Command(os.Args[1], arr...)
+				err := cmd.Start()
+				if err != nil {
+					fmt.Printf("Given Command failed to Execute: %v\n", err)
+				}
+			}
 		} else {
 			latestMatch = cache.LatestMatch // Keep older Match
 		}
