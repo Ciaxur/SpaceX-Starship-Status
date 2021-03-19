@@ -80,7 +80,8 @@ func printTweet(tweetStr string) {
 
 // HandleCliArgs -
 //  Parses CLI Arguments and Handles appropriately
-func HandleCliArgs(cache *twitter.Tweet) {
+//  Returns the number of Arguments to ignore (It was handled here)
+func HandleCliArgs(cache *twitter.Tweet) int {
 	args := parseInput()
 
 	// Handle Argument
@@ -110,5 +111,9 @@ func HandleCliArgs(cache *twitter.Tweet) {
 	} else if args.ignoreCache {
 		fmt.Println("Cache Ignored...")
 		*cache = twitter.Tweet{}
+		return 1
 	}
+
+	// Nothing Handled
+	return 0
 }

@@ -74,7 +74,7 @@ func main() {
 	}
 
 	// Handle CLI Arguments
-	cli.HandleCliArgs(&cache)
+	argsForwarded := cli.HandleCliArgs(&cache)
 
 	// Request Tweets
 	tweets := getTweets(bearerToken, userID)
@@ -125,26 +125,26 @@ func main() {
 
 		// Check Scoring
 		fmt.Printf("Score of '%.2f'\n", score)
-		if score > 0.8 && latestMatch.ID != cache.LatestMatch.ID {
-			fmt.Println("New Tweet:")
-			fmt.Println("- ID: ", latestMatch.ID)
-			fmt.Println("- Tweet: ", latestMatch.Text)
+		// if score > 0.8 && latestMatch.ID != cache.LatestMatch.ID {
+		fmt.Println("New Tweet:")
+		fmt.Println("- ID: ", latestMatch.ID)
+		fmt.Println("- Tweet: ", latestMatch.Text)
 
-			// Execute given method with Tweet ID and Text at end
-			// Args[1] 	= Command to Execute
-			// Args[2:] = Arguments to Command (Optional)
-			if len(os.Args) > 1 {
-				arr := append(os.Args[2:], latestMatch.ID, latestMatch.Text)
+		// Execute given method with Tweet ID and Text at end
+		// Args[1] 	= Command to Execute
+		// Args[2:] = Arguments to Command (Optional)
+		if len(os.Args) > 1 {
+			arr := append(os.Args[argsForwarded+2:], latestMatch.ID, latestMatch.Text)
 
-				cmd := exec.Command(os.Args[1], arr...)
-				err := cmd.Start()
-				if err != nil {
-					fmt.Printf("Given Command failed to Execute: %v\n", err)
-				}
+			cmd := exec.Command(os.Args[argsForwarded+1], arr...)
+			err := cmd.Start()
+			if err != nil {
+				fmt.Printf("Given Command failed to Execute: %v\n", err)
 			}
-		} else {
-			latestMatch = cache.LatestMatch // Keep older Match
 		}
+		// } else {
+		// 	latestMatch = cache.LatestMatch // Keep older Match
+		// }
 
 		// Store current New State
 		cache = tweets
