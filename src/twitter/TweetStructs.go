@@ -1,4 +1,4 @@
-package main
+package twitter
 
 // TweetData Data Key
 type TweetData struct {

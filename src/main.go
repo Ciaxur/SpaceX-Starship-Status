@@ -12,6 +12,8 @@ import (
 	"strings"
 
 	"github.com/spf13/viper"
+	"spacex-status.twitterapi/src/cli"
+	"spacex-status.twitterapi/src/twitter"
 )
 
 /**
@@ -39,7 +41,7 @@ func handleErr(err error, outStr string) {
  * @param token Bearer Token for Twitter's API
  * @param userID The user's ID to request Tweets of
  */
-func getTweets(token string, userID string) Tweet {
+func getTweets(token string, userID string) twitter.Tweet {
 	// Construct Request
 	var requestBody bytes.Buffer
 	url := fmt.Sprintf("https://api.twitter.com/2/users/%s/tweets?tweet.fields=entities", userID)
@@ -53,7 +55,7 @@ func getTweets(token string, userID string) Tweet {
 	handleErr(err, "Client Request Error")
 
 	// Parse JSON Body
-	var result Tweet
+	var result twitter.Tweet
 	json.NewDecoder(res.Body).Decode(&result)
 	return result
 }
@@ -65,11 +67,14 @@ func main() {
 	userID := viper.Get("USER_ID").(string)
 
 	// Load in Cache if any
-	var cache Tweet
+	var cache twitter.Tweet
 	data, err := ioutil.ReadFile("cached.json")
 	if err == nil {
 		json.Unmarshal(data, &cache)
 	}
+
+	// Handle CLI Arguments
+	cli.HandleCliArgs(&cache)
 
 	// Request Tweets
 	tweets := getTweets(bearerToken, userID)
@@ -150,5 +155,4 @@ func main() {
 	} else {
 		fmt.Println("No New Tweats")
 	}
-
 }

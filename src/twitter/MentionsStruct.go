@@ -1,4 +1,4 @@
-package main
+package twitter
 
 // MentionsData Struct
 type MentionsData struct {
