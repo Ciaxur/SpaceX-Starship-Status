@@ -2,8 +2,9 @@ package main
 
 // TweetData Data Key
 type TweetData struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
+	ID       string   `json:"id"`
+	Text     string   `json:"text"`
+	Entities Entities `json:"entities"`
 }
 
 // TweetMeta Request Meta Data

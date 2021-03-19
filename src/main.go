@@ -42,7 +42,7 @@ func handleErr(err error, outStr string) {
 func getTweets(token string, userID string) Tweet {
 	// Construct Request
 	var requestBody bytes.Buffer
-	url := fmt.Sprintf("https://api.twitter.com/2/users/%s/tweets", userID)
+	url := fmt.Sprintf("https://api.twitter.com/2/users/%s/tweets?tweet.fields=entities", userID)
 	req, _ := http.NewRequest("GET", url, &requestBody)
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
