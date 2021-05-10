@@ -108,13 +108,12 @@ func main() {
 					switch strings.ToLower(value) {
 					case "status":
 						score += 0.8
-						break
+					case "superheavy":
+						score += 0.1
 					case "spacex":
 						score += 0.1
-						break
 					case "starship":
 						score += 0.1
-						break
 					}
 				}
 
