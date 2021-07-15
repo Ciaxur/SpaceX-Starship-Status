@@ -16,6 +16,10 @@ import (
 	"spacex-status.twitterapi/src/twitter"
 )
 
+const (
+	SCORE_TRESHOLD = 0.8
+)
+
 /**
  * Initializes environment variables from
  *  the .env file
@@ -83,7 +87,7 @@ func main() {
 	// Check if there is a New Tweet
 	if tweets.Meta.NewestID != cache.Meta.NewestID {
 		// Find Matching Tweet
-		re, err := regexp.Compile("(?i)status|spacex|starship")
+		re, err := regexp.Compile("(?i)status|spacex|starship|production|starbase|diagram")
 		handleErr(err, "Regular Expression Failed to Compile")
 		score := 0.0
 
@@ -92,6 +96,7 @@ func main() {
 
 			if found := re.FindAll([]byte(tweet.Text), -1); len(found) > 0 {
 				tweet := tweets.Data[tweetIndex]
+				fmt.Println("Tweet:", tweet.Text)
 
 				// Check if already checked
 				if cache.LatestMatch.ID == tweet.ID {
@@ -103,9 +108,14 @@ func main() {
 				latestMatch = tweet
 
 				// Score Finding!
-				for index := range found {
-					value := string(found[index])
-					switch strings.ToLower(value) {
+				for _, value := range found {
+					switch strings.ToLower(string(value)) {
+					case "production":
+						score += 0.8
+					case "starbase":
+						score += 0.2
+					case "diagram":
+						score += 0.4
 					case "status":
 						score += 0.8
 					case "superheavy":
@@ -117,14 +127,21 @@ func main() {
 					}
 				}
 
-				// Stop Loop, since Found what was looking for!
-				break
+				// Stop Loop, IF Found what was looking for!
+				if score > SCORE_TRESHOLD {
+					fmt.Println("Score Threashold reached")
+					break
+				} else {
+					fmt.Println("Resetting Score to 0")
+					score = 0
+				}
+
 			}
 		}
 
 		// Check Scoring
 		fmt.Printf("Score of '%.2f'\n", score)
-		if score > 0.8 && latestMatch.ID != cache.LatestMatch.ID {
+		if score > SCORE_TRESHOLD && latestMatch.ID != cache.LatestMatch.ID {
 			fmt.Println("New Tweet:")
 			fmt.Println("- ID: ", latestMatch.ID)
 			fmt.Println("- Tweet: ", latestMatch.Text)
