@@ -13,6 +13,8 @@ import (
 
 	"github.com/spf13/viper"
 	"spacex-status.twitterapi/src/cli"
+	helpers "spacex-status.twitterapi/src/helpers"
+	spacexdata "spacex-status.twitterapi/src/spacex-data"
 	"spacex-status.twitterapi/src/twitter"
 )
 
@@ -33,13 +35,6 @@ func initEnv() {
 	}
 }
 
-// Handle Errors
-func handleErr(err error, outStr string) {
-	if err != nil {
-		panic(fmt.Errorf("%s: %s", outStr, err))
-	}
-}
-
 /**
  * Requests a tweet data from API
  * @param token Bearer Token for Twitter's API
@@ -56,7 +51,7 @@ func getTweets(token string, userID string) twitter.Tweet {
 	fmt.Printf("URL Request: '%s'\n", url)
 	client := http.Client{}
 	res, err := client.Do(req)
-	handleErr(err, "Client Request Error")
+	helpers.HandleGeneralErr(err, "Client Request Error")
 
 	// Parse JSON Body
 	var result twitter.Tweet
@@ -78,7 +73,13 @@ func main() {
 	}
 
 	// Handle CLI Arguments
-	argsForwarded := cli.HandleCliArgs(&cache)
+	argsForwarded, args := cli.HandleCliArgs(&cache)
+
+	// Launch Check-Only
+	if args.CheckLaunch {
+		state := spacexdata.Init(args)
+		os.Exit(state)
+	}
 
 	// Request Tweets
 	tweets := getTweets(bearerToken, userID)
@@ -88,7 +89,7 @@ func main() {
 	if tweets.Meta.NewestID != cache.Meta.NewestID {
 		// Find Matching Tweet
 		re, err := regexp.Compile("(?i)status|spacex|starship|production|starbase|diagram")
-		handleErr(err, "Regular Expression Failed to Compile")
+		helpers.HandleGeneralErr(err, "Regular Expression Failed to Compile")
 		score := 0.0
 
 		for tweetIndex := range tweets.Data {
@@ -166,7 +167,7 @@ func main() {
 		cache = tweets
 		cache.LatestMatch = latestMatch
 		data, err := json.Marshal(cache)
-		handleErr(err, "Error Converting Cache to Bytes")
+		helpers.HandleGeneralErr(err, "Error Converting Cache to Bytes")
 		ioutil.WriteFile("cached.json", data, 0664)
 	} else {
 		fmt.Println("No New Tweats")

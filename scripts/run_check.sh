@@ -8,4 +8,10 @@ APP_PATH=$(dirname $0)
 NOTIFY_PATH=""
 NOTIFY_ICON=""
 
-cd $APP_PATH && ./app "sh" "$NOTIFY_PATH" -i "$NOTIFY_ICON" -a "SpaceX-Status" $@
+cd $APP_PATH || exit 1
+
+# Check Starship update from Twitter
+./app "sh" "$NOTIFY_PATH" -i "$NOTIFY_ICON" -a "SpaceX-Status" $@
+
+# Check SpaceX Updates from API
+./app -check-launch "sh" "$NOTIFY_PATH" -a "SpaceX-Status" $@

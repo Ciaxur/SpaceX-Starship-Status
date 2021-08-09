@@ -34,6 +34,10 @@ mkdir build
 
 # Use Golang to Build Application
 go build -o build/app ./src
+
+# After modifying the Run Script, copy & run the script
+cp ./script/run_check.sh ./build
+./buid/run_check.sh
 ```
 
 ### 📄 License

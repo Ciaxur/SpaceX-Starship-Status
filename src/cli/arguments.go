@@ -10,16 +10,17 @@ import (
 	"spacex-status.twitterapi/src/twitter"
 )
 
-type cliArguments struct {
-	isHelp      bool
-	isVersion   bool
-	isListCache bool
-	ignoreCache bool
+type Arguments struct {
+	IsHelp      bool
+	IsVersion   bool
+	IsListCache bool
+	IgnoreCache bool
+	CheckLaunch bool
 }
 
 // Parses CLI Arguments
 //  Returning Arguments Struct of Values
-func parseInput() cliArguments {
+func parseInput() Arguments {
 	var flagHelp = flag.Bool("help", false, "Displays Help Menu")
 	flag.BoolVar(flagHelp, "h", false, "Displays Help Menu")
 
@@ -32,8 +33,10 @@ func parseInput() cliArguments {
 	var flagIgnoreCache = flag.Bool("no-cache", false, "Ignores existing Cache")
 	flag.BoolVar(flagIgnoreCache, "c", false, "Ignores existing Cache")
 
+	var checkLaunch = flag.Bool("check-launch", false, "Checks latest launch information")
+
 	flag.Parse()
-	return cliArguments{*flagHelp, *flagVersion, *flagList, *flagIgnoreCache}
+	return Arguments{*flagHelp, *flagVersion, *flagList, *flagIgnoreCache, *checkLaunch}
 }
 
 // Prints Help Menu
@@ -50,6 +53,7 @@ func printHelp() {
 	InfoOut.Printf("\nCommand-Line Options:\n")
 	fmt.Printf("\t-l, -list \t\t\t Lists Cached Tweets\n")
 	fmt.Printf("\t-c, -no-cache \t\t\t Ignores existing Cache\n")
+	fmt.Printf("\t-check-launch \t\t\t Checks latest launch information\n")
 }
 
 // Prints Tweet in a Formated Style
@@ -81,17 +85,17 @@ func printTweet(tweetStr string) {
 // HandleCliArgs -
 //  Parses CLI Arguments and Handles appropriately
 //  Returns the number of Arguments to ignore (It was handled here)
-func HandleCliArgs(cache *twitter.Tweet) int {
+func HandleCliArgs(cache *twitter.Tweet) (int, *Arguments) {
 	args := parseInput()
 
 	// Handle Argument
-	if args.isHelp {
+	if args.IsHelp {
 		printHelp()
 		os.Exit(0)
-	} else if args.isVersion {
+	} else if args.IsVersion {
 		StdOut.Printf("Version: %s\n", AppVersion)
 		os.Exit(0)
-	} else if args.isListCache {
+	} else if args.IsListCache {
 		if len(cache.Data) != 0 {
 			// Output Latest Match
 			titleOut := color.New(color.Bold)
@@ -108,12 +112,12 @@ func HandleCliArgs(cache *twitter.Tweet) int {
 			WarnOut.Println("Cannot issue List. Cache is Empty")
 		}
 		os.Exit(0)
-	} else if args.ignoreCache {
+	} else if args.IgnoreCache {
 		fmt.Println("Cache Ignored...")
 		*cache = twitter.Tweet{}
-		return 1
+		return 1, nil
 	}
 
 	// Nothing Handled
-	return 0
+	return 0, &args
 }
