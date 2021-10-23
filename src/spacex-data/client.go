@@ -44,6 +44,12 @@ func HandleLaunchCheck(latestLaunch *LaunchResponse, rocket *RocketResponse) {
 		return
 	}
 
+	// No Image associated with Launch (no launch)
+	if latestLaunch.Links.Patch.Small == "" {
+		fmt.Println("No image to download")
+		return
+	}
+
 	imageFile := downloadImage(latestLaunch.Links.Patch.Small)
 	imageFile.Close()
 	fmt.Println("Image Downloaded to:", imageFile.Name())
