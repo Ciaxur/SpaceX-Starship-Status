@@ -55,6 +55,7 @@ func HandleLaunchCheck(latestLaunch *LaunchResponse, rocket *RocketResponse) {
 	fmt.Println("Image Downloaded to:", imageFile.Name())
 
 	// Issue notification with data
+	fmt.Println("Notifying user")
 	if len(os.Args) > 1 {
 		flickrLinksStr := ""
 		maxFlickrLinks := 2
