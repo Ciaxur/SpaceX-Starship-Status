@@ -64,6 +64,10 @@ func getLatestLaunch() LaunchResponse {
 	res, err := client.Do(req)
 	helpers.HandleGeneralErr(err, "Latest Launch Request Error")
 
+	if res.StatusCode != http.StatusOK {
+		panic(fmt.Sprintf("failed request to spacex api with %d status code: %v\n", res.StatusCode, res.Status))
+	}
+
 	// Parse JSON Body
 	var result LaunchResponse
 	json.NewDecoder(res.Body).Decode((&result))

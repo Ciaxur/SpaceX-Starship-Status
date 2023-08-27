@@ -31,7 +31,7 @@ func initEnv() {
 	viper.SetConfigFile(".env")
 	viper.AddConfigPath(".")
 	if err := viper.ReadInConfig(); err != nil {
-		panic(fmt.Errorf("Fatal error reading in '.env' file: %s", err))
+		panic(fmt.Errorf("fatal error reading in '.env' file: %s", err))
 	}
 }
 
@@ -52,6 +52,11 @@ func getTweets(token string, userID string) twitter.Tweet {
 	client := http.Client{}
 	res, err := client.Do(req)
 	helpers.HandleGeneralErr(err, "Client Request Error")
+
+	// Handle request failure.
+	if res.StatusCode != http.StatusOK {
+		panic(fmt.Sprintf("failed request to twitter api with %d status code: %v\n", res.StatusCode, res.Status))
+	}
 
 	// Parse JSON Body
 	var result twitter.Tweet
